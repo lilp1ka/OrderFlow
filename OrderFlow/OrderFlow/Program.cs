@@ -1,2 +1,8 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+using OrderFlow.Data;
+
+var orders = SampleData.Orders;
+
+foreach (var order in orders)
+{
+    Console.WriteLine($"Order {order.Id}, Total: {order.TotalAmount}");
+}
