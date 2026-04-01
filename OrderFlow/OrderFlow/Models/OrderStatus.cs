@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace OrderFlow.Models
 {
-    internal class OrderStatus
+    public enum OrderStatus
     {
+        New,
+        Validated,
+        Processing,
+        Completed,
+        Cancelled
     }
 }
