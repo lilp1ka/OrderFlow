@@ -14,6 +14,8 @@ namespace OrderFlow.Models
         public DateTime Date { get; set; }
         public OrderStatus Status { get; set; }
 
+        public bool IsValid { get; set; }
+        public List<string> ValidationErrors { get; set; } = new();
         public decimal TotalAmount => Items.Sum(i => i.TotalPrice);
     }
 }

@@ -1,32 +1,50 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using OrderFlow.Data;
-using OrderFlow.Services;
 using OrderFlow.Models;
+using OrderFlow.Services;
 
 class Program
 {
-    static void Main()
+    static async Task Main()
     {
-        var orders = SampleData.Orders;
+        Console.WriteLine("=== ЗАДАНИЕ 1: События ===");
+        var processor = new OrderProcessor();
 
-        Console.WriteLine("order validation: ");
-        var order1 = orders[0];
-        var order2 = orders[4]; 
-        if(OrderValidator.ValidateAll(order1, out var errors1))
-            Console.WriteLine($"Order {order1.Id} is valid");
-        else Console.WriteLine($"Order {order1.Id} invalid: {string.Join(", ", errors1)}");
+        // Подписчики событий
+        processor.StatusChanged += (s, e) =>
+            Console.WriteLine($"STATUS: {e.OldStatus} -> {e.NewStatus}");
+        processor.ValidationCompleted += (s, e) =>
+            Console.WriteLine($"VALIDATION: {(e.IsValid ? "valid" : "invalid")}");
+        processor.StatusChanged += (s, e) =>
+            Console.WriteLine($"EMAIL: Order {e.Order.Id} changed status");
 
-        if(OrderValidator.ValidateAll(order2, out var errors2))
-            Console.WriteLine($"Order {order2.Id} is valid");
-        else Console.WriteLine($"Order {order2.Id} invalid: {string.Join(", ", errors2)}");
+        // Пример обработки первых 2 заказов
+        foreach (var order in SampleData.Orders.Take(2))
+            processor.ProcessOrder(order);
 
-        Console.WriteLine("\n processing order: ");
-        var vipOrders = OrderProcessor.FilterOrders(orders, o=>o.Customer.IsVip);
-        OrderProcessor.PrintOrders(vipOrders);
+        Console.WriteLine("\n=== ЗАДАНИЕ 2: Async обработка ===");
+        var asyncProcessor = new AsyncOrderProcessor();
 
-        var totals = OrderProcessor.ProjectOrders(orders, o=>new { o.Id, o.TotalAmount });
-        foreach(var t in totals) Console.WriteLine($"Order {t.Id} total: {t.TotalAmount}");
+        // Обработка нескольких заказов параллельно
+        await asyncProcessor.ProcessMultipleOrdersAsync(SampleData.Orders);
 
-        var sum = OrderProcessor.AggregateOrders(orders, os=>os.Sum(o=>o.TotalAmount));
-        Console.WriteLine($"total sum of all orders: {sum}");
+        Console.WriteLine("\n=== ЗАДАНИЕ 3: Thread-safe статистика ===");
+        var stats = new OrderStatistics();
+
+        Parallel.ForEach(SampleData.Orders, order =>
+        {
+            stats.AddOrderSafe(order); // потокобезопасное добавление
+        });
+
+        Console.WriteLine($"\nTotal processed: {stats.TotalProcessed}");
+        Console.WriteLine($"Total revenue: {stats.TotalRevenue}");
+        Console.WriteLine("Orders per status:");
+        foreach (var kvp in stats.OrdersPerStatus)
+            Console.WriteLine($"  {kvp.Key}: {kvp.Value}");
+        Console.WriteLine("Processing errors:");
+        foreach (var err in stats.ProcessingErrors)
+            Console.WriteLine($"  {err}");
     }
 }
