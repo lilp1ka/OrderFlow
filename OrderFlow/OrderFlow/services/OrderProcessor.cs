@@ -33,6 +33,8 @@ public class OrderProcessor
 
     private void ChangeStatus(Order order, OrderStatus newStatus)
     {
+        if (order.Status == newStatus) return; // ВОТ ЭТО
+        
         var old = order.Status;
         order.Status = newStatus;
 

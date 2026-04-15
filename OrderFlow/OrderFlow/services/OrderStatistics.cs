@@ -18,8 +18,13 @@ public class OrderStatistics
         lock (_lock)
         {
             TotalRevenue += order.TotalAmount;
-            if (!order.IsValid)
-                ProcessingErrors.Add($"Order {order.Id} invalid: {string.Join(", ", order.ValidationErrors)}");
+            if (!OrderValidator.ValidateAll(order, out var errors))
+            {
+                lock (_lock)
+                {
+                    ProcessingErrors.Add($"Order {order.Id} invalid: {string.Join(", ", errors)}");
+                }
+            }
         }
 
         OrdersPerStatus.AddOrUpdate(order.Status, 1, (_, old) => old + 1);

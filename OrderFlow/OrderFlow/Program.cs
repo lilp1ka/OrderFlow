@@ -30,8 +30,6 @@ class Program
 
         var asyncProcessor = new AsyncOrderProcessor();
 
-        await asyncProcessor.ProcessOrderAsync(SampleData.Orders[0]);
-
         await asyncProcessor.ProcessMultipleOrdersAsync(SampleData.Orders);
 
         Console.WriteLine("\nZADANIE 3: ");
