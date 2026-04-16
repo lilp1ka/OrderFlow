@@ -1,59 +1,78 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using OrderFlow.Models;
+using System.Text.Json;
 using OrderFlow.Services;
-using System.Collections.Generic;
 using OrderFlow.Data;
+using OrderFlow.Models;
 
 class Program
 {
     static async Task Main()
     {
-        Console.WriteLine("zadanie 1: ");
+        Console.WriteLine("\nZADANIE 1 (Lab3): JSON/XML");
+
+        var repo = new OrderFlow.Persistence.OrderRepository();
+
+        var jsonPath = Path.Combine("data", "orders.json");
+        var xmlPath = Path.Combine("data", "orders.xml");
+
+        await repo.SaveToJsonAsync(SampleData.Orders, jsonPath);
+        await repo.SaveToXmlAsync(SampleData.Orders, xmlPath);
+
+        var empty = new List<Order>();
+
+        var fromJson = await repo.LoadFromJsonAsync(jsonPath);
+        var fromXml = await repo.LoadFromXmlAsync(xmlPath);
+
+        Console.WriteLine($"JSON count: {fromJson.Count}");
+        Console.WriteLine($"XML count: {fromXml.Count}");
+
+        Console.WriteLine($"JSON total: {fromJson.Sum(o => o.TotalAmount)}");
+        Console.WriteLine($"XML total: {fromXml.Sum(o => o.TotalAmount)}");
+        
+        
+        Console.WriteLine("\nZADANIE 2 (XML REPORT):");
+
+        var builder = new XmlReportBuilder();
+
+        var report = builder.BuildReport(SampleData.Orders);
+
+        await builder.SaveReportAsync(report, "data/report.xml");
+
+        Console.WriteLine("Report saved to data/report.xml");
+
+        var expensive = await builder.FindHighValueOrderIdsAsync("data/report.xml", 1000m);
+
+        Console.WriteLine("Orders > 1000:");
+        foreach (var id in expensive)
+        {
+            Console.WriteLine($"  Order {id}");
+        }
+        
+        
+        Console.WriteLine("\nZADANIE 3 (WATCHER):");
 
         var processor = new OrderProcessor();
 
         processor.StatusChanged += (s, e) =>
             Console.WriteLine($"STATUS: {e.OldStatus} -> {e.NewStatus}");
-        processor.StatusChanged += (s, e) =>
-            Console.WriteLine($"EMAIL: Order {e.Order.Id} changed status");
-        processor.ValidationCompleted += (s, e) =>
-            Console.WriteLine($"VALIDATION: Order {e.Order.Id} valid: {e.IsValid}");
 
-        foreach (var order in SampleData.Orders.Take(2))
+        using var watcher = new InboxWatcher("inbox", processor);
+
+        _ = Task.Run(async () =>
         {
-            processor.ProcessOrder(order);
-        }
+            for (int i = 1; i <= 5; i++)
+            {
+                await Task.Delay(3000);
 
-        Console.WriteLine("\nZADANIE 2: ");
+                var path = $"inbox/orders_{i}.json";
+                await repo.SaveToJsonAsync(SampleData.Orders.Take(2), path);
 
-        var asyncProcessor = new AsyncOrderProcessor();
-
-        await asyncProcessor.ProcessMultipleOrdersAsync(SampleData.Orders);
-
-        Console.WriteLine("\nZADANIE 3: ");
-
-        var stats = new OrderStatistics();
-
-        Parallel.ForEach(SampleData.Orders, order =>
-        {
-            stats.AddOrderSafe(order);
+                Console.WriteLine($"[TEST] file created: {path}");
+            }
         });
-
-        Console.WriteLine($"\nTotal processed: {stats.TotalProcessed}");
-        Console.WriteLine($"Total revenue: {stats.TotalRevenue}");
-
-        Console.WriteLine("Orders per status:");
-        foreach (var kvp in stats.OrdersPerStatus)
-        {
-            Console.WriteLine($"  {kvp.Key}: {kvp.Value}");
-        }
-
-        Console.WriteLine("Processing errors:");
-        foreach (var err in stats.ProcessingErrors)
-        {
-            Console.WriteLine($"  {err}");
-        }
+        Console.ReadLine();
+        
     }
+    
+    
+    
 }
