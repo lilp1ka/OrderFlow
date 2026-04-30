@@ -4,3 +4,6 @@ obj/
 .idea/fi
 .idea/
 ../.idea/
+orderflow.db
+*.db
+*.sqlite

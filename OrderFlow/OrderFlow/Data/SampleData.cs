@@ -5,12 +5,12 @@ namespace OrderFlow.Data;
 public static class SampleData
 {
     public static List<Product> Products = new List<Product> {
-        new Product{ Id=1, Name="Item1", Price=100, Category="Cat1"},
-        new Product{ Id=2, Name="Item2", Price=200, Category="Cat1"},
-        new Product{ Id=3, Name="Item3", Price=300, Category="Cat2"},
-        new Product{ Id=4, Name="Item4", Price=400, Category="Cat2"},
-        new Product{ Id=5, Name="Item5", Price=500, Category="Cat3"},
-        new Product{ Id=6, Name="Item6", Price=600, Category="Cat3"}
+        new Product{ Id=1, Name="Item1", Price=100, Category="Cat1", Stock=1 },
+        new Product{ Id=2, Name="Item2", Price=200, Category="Cat1", Stock=10 },
+        new Product{ Id=3, Name="Item3", Price=300, Category="Cat2", Stock=10 },
+        new Product{ Id=4, Name="Item4", Price=400, Category="Cat2", Stock=10 },
+        new Product{ Id=5, Name="Item5", Price=500, Category="Cat3", Stock=10 },
+        new Product{ Id=6, Name="Item6", Price=600, Category="Cat3", Stock=10 }
     };
 
     public static List<Customer> Customers = new List<Customer> {
