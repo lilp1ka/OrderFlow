@@ -210,6 +210,28 @@ class Program
         
         // FAIL (celowo maly stock)
         await service.ProcessOrderAsync(db, 2);
+        
+        
+        
+        Console.WriteLine("\n=== CURRENCY CONVERSION ===");
+
+        var httpClient = new HttpClient();
+
+        var currencyService = new CurrencyService(httpClient);
+
+        var converter = new OrderCurrencyConverter(currencyService);
+
+        var someOrders = db.Orders.Take(2).ToList();
+
+        foreach (var order in someOrders)
+        {
+            var usd = await converter.ConvertOrderTotalAsync(order, "USD");
+
+            var eur = await converter.ConvertOrderTotalAsync(order, "EUR");
+
+            Console.WriteLine(
+                $"Order {order.Id} | PLN: {order.TotalAmount} | USD: {usd:F2} | EUR: {eur:F2}");
+        }
     }
     
     

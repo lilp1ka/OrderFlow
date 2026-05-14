@@ -4,34 +4,24 @@ namespace OrderFlow.Services;
 
 public class DiscountCalculator
 {
-    private const decimal VipDiscountRate = 0.10m;
-    private const decimal HighValueRate = 0.05m;
-    private const decimal ExtraVipRate = 0.05m;
-    private const decimal MaxDiscountRate = 0.25m;
-
     public decimal CalculateDiscount(Order order)
     {
         decimal total = order.TotalAmount;
 
-        decimal discountRate = 0m;
+        decimal discountPercent = 0;
 
-        if (order.Customer?.IsVip == true)
-            discountRate += VipDiscountRate;
+        if (order.Customer.IsVip)
+            discountPercent += 10;
 
         if (total > 1000)
-            discountRate += HighValueRate;
+            discountPercent += 5;
 
-        if (IsVip(order))
-            discountRate += VipDiscountRate;
+        if (order.Customer.IsVip && total > 5000)
+            discountPercent += 5;
 
-        if (discountRate > MaxDiscountRate)
-            discountRate = MaxDiscountRate;
+        if (discountPercent > 25)
+            discountPercent = 25;
 
-        return total * discountRate;
-    }
-    
-    private static bool IsVip(Order order)
-    {
-        return order.Customer?.IsVip == true;
+        return total * discountPercent / 100m;
     }
 }
