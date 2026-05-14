@@ -21,12 +21,17 @@ public class DiscountCalculator
         if (total > 1000)
             discountRate += HighValueRate;
 
-        if (order.Customer?.IsVip == true && total > 5000)
-            discountRate += ExtraVipRate;
+        if (IsVip(order))
+            discountRate += VipDiscountRate;
 
         if (discountRate > MaxDiscountRate)
             discountRate = MaxDiscountRate;
 
         return total * discountRate;
+    }
+    
+    private static bool IsVip(Order order)
+    {
+        return order.Customer?.IsVip == true;
     }
 }
