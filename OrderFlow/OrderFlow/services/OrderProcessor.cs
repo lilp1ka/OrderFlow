@@ -67,4 +67,17 @@ public class OrderProcessor
     {
         return aggregator(orders);
     }
+    
+    
+    public decimal CalculateTotal(Order order)
+    {
+        return order.Items.Sum(i => i.Quantity * i.UnitPrice);
+    }
+
+    public List<Order> FilterOrders(
+        IEnumerable<Order> orders,
+        Predicate<Order> predicate)
+    {
+        return orders.Where(o => predicate(o)).ToList();
+    }
 }
